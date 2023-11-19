@@ -13,12 +13,13 @@
 
 
 <body>
+    <!-- Barra de navegación -->
     <header>
         <div class="container__menu">
             <div class="menu">
                 <nav>
                     <ul>
-                        <li><a href="#" id="selected">Inicio</a></li>
+                        <li><a href="{{url_for('miembro')}}" id="selected">Inicio</a></li>
                         <li><a href="#">Servicios</a>
                             <ul>
                                 <li><a href="{{ url_for('perfil') }}">Perfil</a></li>
@@ -31,7 +32,7 @@
                         <li><a href="#">Nosotros</a></li>
                         <li><a href="#">Contactos</a></li>
                         <li class="admin">
-                            <h6>Admin</h6>
+                            <h6>Juan</h6>
                         </li>
                         <li class="user"><img src="/static/img/ic_person.png" alt=""></li>
                         <li><a href="{{ url_for('login') }}"></a></li>
@@ -43,40 +44,42 @@
 
     {% with messages = get_flashed_messages() %}
     {% if messages %}
-    {% for message in messages%}
+    {% for message in messages %}
     <div class="alert alert-warning alert-dismissible fade show" role="alert">
-        {{message}}
+        {{ message }}
     </div>
     {% endfor %}
     {% endif %}
     {% endwith %}
 
-    <main id="tabla">
+    <main id="tabla" class="d-flex align-items-center justify-content-center">
         <div class="content-container">
-            <div class="col-md-5">
+            <div class="col-md-11 p-4">
                 <form method="post">
                     <table class="table table-striped table-bordered bg-white centrar-tabla">
                         <thead>
                             <tr>
+                                <th>Id_Maquina</th>
                                 <th>Nombre</th>
                                 <th>Estado</th>
-                                <th>Disponibilidad</th>
-                                <th>Fecha</th>
+                                <th>Acción</th>
                             </tr>
                         </thead>
                         <tbody>
+                            {% for c in rows %}
                             <tr>
-                                <td> Escaladora </td>
-                                <td> Buen Estado </td>
-                                <td> Activo </td>
-                                <td> <label for="fechaagenda">Fecha de agenda:</label>
-                                    <input type="date" id="fechaagenda" name="fechaagenda" required class="form-control"
-                                        value="2018-07-22" min="2000-01-01" max="2023-12-31">
-                                </td>
-                                <td>
-                                    <a href="{{ url_for('vista_editar_membresia') }}" class="btn btn-secondary">AGENDAR
-                                        MÁQUINA</a>
-                                </td>
+                                <<<<<<< HEAD <td> Escaladora </td>
+                                    <td> Buen Estado </td>
+                                    <td> Activo </td>
+                                    <td> <label for="fechaagenda">Fecha de agenda:</label>
+                                        <input type="date" id="fechaagenda" name="fechaagenda" required
+                                            class="form-control" value="2018-07-22" min="2000-01-01" max="2023-12-31">
+                                    </td>
+                                    <td>
+                                        <a href="{{ url_for('vista_editar_membresia') }}"
+                                            class="btn btn-secondary">AGENDAR
+                                            MÁQUINA</a>
+                                    </td>
                             </tr>
                             <tr>
                                 <td> Caminadora </td>
@@ -86,12 +89,26 @@
                                 <td>
                                     <a href="{{ url_for('vista_editar_membresia') }}" class="btn btn-secondary">AGENDAR
                                         MÁQUINA</a>
+                                    =======
+                                <td>{{ c.0 }}</td>
+                                <td>{{ c.1 }}</td>
+                                <td>{% if c[4] == 1 %}
+                                    Buen estado
+                                    {% else %}
+                                    Mal estado
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    <a href="{{ url_for('vista_reservar_maquina', id=c.0) }}"
+                                        class="btn btn-primary">RESERVAR</a>
+                                    >>>>>>> 3345c79b1adb8f2de8a051cc09d87dd22fc2c492
                                 </td>
                             </tr>
+                            {% endfor %}
                         </tbody>
                     </table>
-                    <a href="{{ url_for('reservas_miembro') }}" class="btn btn-primary btn-block">Volver</a>
                 </form>
+                <a href="{{ url_for('reservas_miembro') }}" class="btn btn-primary btn-block">Volver</a>
             </div>
         </div>
     </main>

@@ -36,28 +36,37 @@
             </div>
         </div>
     </header>
-    <main id="tabla">
-        <div class="content-container">
-            <div class="col-md-5">
-                <form action="">
-                    <label for="currend_password"><b>Contraseña actual</b></label>
-                    <input class="form-control" type="password" name="currend_password" id="currend_password">
-                    <br>
-                    <label for="new_password"><b>Nueva contraseña</b></label>
-                    <input class="form-control" type="password" name="new_password" id="new_password">
-                    <br>
-                    <label for="confirm_password"><b>Confirmar nueva contraseña</b></label>
-                    <input class="form-control" type="password" name="confirm_password" id="confirm_password">
-                    <br>
-                    <div class="container_botones">
-                        <a class="btn btn-primary btn-block">Guardar</a>
-                        <a style="margin-left: 50px" href="{{ url_for('perfil') }}"
-                            class="btn btn-primary btn-block">Volver</a>
-                    </div>
-                </form>
-            </div>
-        </div>
-    </main>
-</body>
 
-</html>
+    {% with messages = get_flashed_messages() %}
+    {% if messages %}
+    {% for message in messages%}
+    <div class="alert alert-warning alert-dismissible fade show" role="alert">
+        {{message}}
+    </div>
+    {% endfor %}
+    {% endif %}
+    {% endwith %}
+
+    <div class="container">
+        <div class="form_password">
+            <h1 class="edit_perfil">Cambiar contraseña</h1>
+            <hr>
+            <form action="/actualizarcontrasenains/{{info_empleado[0]}}" method="POST">
+                <h6><b>Contraseña actual</b></h6>
+                <input class="campo" type="password" name="currend_password" id="currend_password">
+                <br>
+                <h6><b>Nueva contraseña</b></h6>
+                <input class="campo" type="password" name="new_password" id="new_password">
+                <br>
+                <h6><b>Confirmar nueva contraseña</b></h6>
+                <input class="campo" type="password" name="confirm_password" id="confirm_password">
+                <br>
+                <div class="container_botones">
+                    <button type="submit" class="btn btn-primary btn-block">Guardar</button>
+                    <a style="margin-left: 50px" href="{{ url_for('perfil_instructor') }}"
+                        class="btn btn-primary btn-block">Volver</a>
+                </div>
+            </form>
+        </div>
+    </div>
+</body>
