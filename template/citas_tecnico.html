@@ -34,18 +34,24 @@
     <div class="d-flex align-items-center flex-column mt-5 mb-5">
         <h3 class="title_perfil">CITAS PROGRAMADAS</h3>
     </div>
-    <div class="containers_info flex-column">
-        <div class="d-flex justify-content-between align-items-center w-100 mb-4">
-            <h2 class="edit_perfil">Mantenimiento Caminadora</h2>
-            <a class="btn btn-primary" href="{{url_for('info_personal_user')}}">Volver</a>
+    <main id="tabla">
+        <div class="content-container">
+            <div>
+                <div class="d-flex justify-content-between align-items-center w-100 mb-4">
+                    <h2 class="edit_perfil">Mantenimiento Caminadora</h2>
+                    <a class="btn btn-primary" href="{{url_for('info_personal_user')}}">Volver</a>
+                </div>
+                <div class="d-flex flex-column w-100 ml-5">
+                    <p class="fw-bold text-muted">La cita se ha programado para el día 25 de Octubre de 2023 a las 4:00
+                        Pm.</p>
+                    <p class="fw-bold text-muted">Dirección: Cl. 68 Sur # 47 - 10, Gimnasio La Candelaria.</p>
+                    <p class="fw-bold text-muted">Favor diligenciar el informe del mantenimiento una vez terminado el
+                        mismo.</p>
+                </div>
+                <a href="{{ url_for('gestion_usuarios') }}" class="btn btn-primary btn-block mt-3">Registrar Informe</a>
+            </div>
         </div>
-        <div class="d-flex flex-column w-100 ml-5">
-            <p class="fw-bold text-muted">La cita se ha programado para el día 25 de Octubre de 2023 a las 4:00 Pm.</p>
-            <p class="fw-bold text-muted">Dirección: Cl. 68 Sur # 47 - 10, Gimnasio La Candelaria.</p>
-            <p class="fw-bold text-muted">Favor diligenciar el informe del mantenimiento una vez terminado el mismo.</p>
-        </div>
-        <a href="{{ url_for('gestion_usuarios') }}" class="btn btn-primary btn-block mt-3">Registrar Informe</a>
-    </div>
+    </main>
 
 </body>
 

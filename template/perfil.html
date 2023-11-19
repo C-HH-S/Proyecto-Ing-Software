@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -9,6 +10,7 @@
         rel="stylesheet" integrity="sha384-T3c6CoIi6uLrA9TneNEoa7RxnatzjcDSCmG1MXxSR1GAsXEV/Dwwykc2MPK8M2HN"
         crossorigin="anonymous">
 </head>
+
 <body>
     <header>
         <div class="container__menu">
@@ -18,16 +20,18 @@
                         <li><a href="{{url_for('miembro')}}" id="selected">Inicio</a></li>
                         <li><a href="#">Servicios</a>
                             <ul>
-                                <li><a href="{{url_for('perfil')}}">Perfil</a></li>
+                                <li><a href="{{ url_for('perfil') }}">Perfil</a></li>
                                 <li><a href="{{url_for('reservas_miembro')}}">Reservas</a></li>
                                 <li><a href="{{url_for('plan_de_trabajo_miembro')}}">Planes de trabajo</a></li>
-                                <li><a href="{{url_for('miembro_estado_membresias')}}">Membresias</a></li>
-                                <li><a href="#">Mi proceso</a></li>
+                                <li><a href="{{url_for('miembro_estado_membresia')}}">Membresias</a></li>
+                                <li><a href="{{ url_for('proceso_plan_trabajo') }}">Mi proceso</a></li>
                             </ul>
                         </li>
                         <li><a href="#">Nosotros</a></li>
                         <li><a href="#">Contactos</a></li>
-                        <li class="admin"><h6>Juan</h6></li>
+                        <li class="admin">
+                            <h6>Juan</h6>
+                        </li>
                         <li class="user"><img src="/static/img/ic_person.png" alt=""></li>
                         <li><a href="{{ url_for('login') }}"></a></li>
                     </ul>
@@ -46,8 +50,10 @@
     </div>
     <div class="containers_info">
         <h3 class="edit_perfil">Cambiar contraseña</h3>
-        <a style="margin-left: 155px"class="btn btn-primary ml-6" href="{{url_for('cambio_contrasena_user')}}">Cambiar</a>
+        <a style="margin-left: 155px" class="btn btn-primary ml-6"
+            href="{{url_for('cambio_contrasena_user')}}">Cambiar</a>
     </div>
     <a style="margin-left: 300px" href="{{ url_for('miembro') }}" class="btn btn-primary btn-block">Volver</a>
 </body>
+
 </html>

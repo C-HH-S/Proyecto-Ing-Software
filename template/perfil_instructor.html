@@ -17,11 +17,11 @@
             <div class="menu">
                 <nav>
                     <ul>
-                        <li><a href="{{url_for('miembro')}}" id="selected">Inicio</a></li>
+                        <li><a href="#" id="selected">Inicio</a></li>
                         <li><a href="#">Servicios</a>
                             <ul>
-                                <li><a href="">Perfil</a></li>
-                                <li><a href="">Asignar Plan de Trabajo</a></li>
+                                <li><a href="{{ url_for('perfil_instructor') }}">Perfil</a></li>
+                                <li><a href="{{ url_for('planes_trabajo_ins') }}">Asignar Plan de Trabajo</a></li>
                             </ul>
                         </li>
                         <li><a href="#">Nosotros</a></li>
@@ -37,14 +37,14 @@
         </div>
     </header>
     <div class="d-flex align-items-center flex-column">
-        <img class="img_user" src="https://xsgames.co/randomusers/avatar.php?g=female" alt="">
+        <img class="img_user" style="margin-left: 0px;" src="https://xsgames.co/randomusers/avatar.php?g=female" alt="">
         <h3 class="title_perfil">MARÍA NIEVES</h3>
         <h6 class="title_perfil">nievesmria@gmail.com</h6>
     </div>
     <div class="containers_info flex-column">
         <div class="d-flex justify-content-between align-items-center w-100 mb-4">
             <h2 class="edit_perfil">Información personal y Horario</h2>
-            <a class="btn btn-primary" href="{{url_for('info_personal_user')}}">Cambiar</a>
+            <a class="btn btn-primary" href="{{url_for('editar_info_personal_ins')}}">Cambiar</a>
         </div>
         <div class="d-flex flex-column w-100 ml-5">
             <p class="fw-bold text-muted">Edad: 30</p>
@@ -56,7 +56,7 @@
     </div>
     <div class="containers_info d-flex justify-content-between">
         <h2 class="edit_perfil">Cambiar contraseña</h2>
-        <a class="btn btn-primary ml-6" href="{{url_for('cambio_contrasena_user')}}">Cambiar</a>
+        <a class="btn btn-primary ml-6" href="{{url_for('cambio_contrasena_ins')}}">Cambiar</a>
     </div>
 </body>
 

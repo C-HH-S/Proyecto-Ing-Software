@@ -1,15 +1,22 @@
 from flask_mysqldb import MySQL
-from flask import Flask, jsonify, render_template, request, redirect, url_for, flash
+from flask_bcrypt import Bcrypt
+from reportlab.lib import colors
+from reportlab.lib.pagesizes import letter, landscape
+from reportlab.platypus import SimpleDocTemplate, Table, TableStyle
+from datetime import datetime
+from flask import Flask, jsonify, render_template, request, redirect, url_for, flash, send_file
 import mysql.connector
 
+
 app = Flask(__name__, static_folder='static', template_folder='template')
+bcrypt = Bcrypt(app)
 
 
 # Configura la conexión a la base de datos MySQL
 app.config['MYSQL_HOST'] = "localhost"
 app.config['MYSQL_USER'] = "root"
 app.config['MYSQL_PASSWORD'] = ""
-app.config['MYSQL_DB'] = "bd_gimnasio"
+app.config['MYSQL_DB'] = "gim_candelaria"
 mysql = MySQL(app)
 
 # Inicializar sesion
@@ -67,6 +74,18 @@ def gestion_maquinas():
 @app.route('/gestion_membresias')
 def gestion_membresias():
      return render_template('gestion_membresias.html')
+ 
+@app.route('/gestion_instructores')
+def gestion_instructores():
+     return render_template('gestion_instructores.html')
+ 
+@app.route('/perfil_instructor')
+def perfil_instructor():
+     return render_template('perfil_instructor.html')
+ 
+@app.route('/editar_info_personal_ins', methods=['GET', 'POST'])
+def editar_info_personal_ins():
+    return render_template('editar_info_personal_ins.html')
 
 
 
@@ -209,7 +228,7 @@ def reservar_maquina():
         #return render_template('membresia.html', data=rows)
     return render_template('reservar_maquina.html')
 
-#plan de trabado de miembro
+#plan de trabajo de miembro
 @app.route('/plan_de_trabajo_miembro')
 def plan_de_trabajo_miembro():
         #cur = mysql.connection.cursor()
@@ -362,7 +381,7 @@ def agregar_maquina():
         cur = mysql.connection.cursor()
         cur.execute('INSERT INTO historial_maquinaria (IdRegistro, Fecha_Compra, Precio, Proveedor) VALUES (%s, %s, %s,%s)',
                     (registro, fechaCompra, precio, proveedor))
-        cur.execute('INSERT INTO maquinas (IdRegistro, nombre, estado, disponibilidad) VALUES (%s, %s, %s,%s)',
+        cur.execute('INSERT INTO maquina (IdRegistro, nombre, estado, disponibilidad) VALUES (%s, %s, %s,%s)',
                     (registro, nombre, estado, disponibilidad))
         mysql.connection.commit()
         flash('Máquina agregada correctamente')
@@ -470,7 +489,268 @@ def getmantenimiento(maquina_id):
         flash(f'Cita agendada para {fecha} a las {hora}')
     return render_template('vista_mantenimiento.html', maquina=maquina) # Renderiza la plantilla con los datos actualizados
 
+# Vista listado instructores administrador
+@app.route('/listado_instructores', methods=['GET', 'POST'])
+def listado_instructores():
+    cur = mysql.connection.cursor()
+    cur.execute("SELECT * FROM empleado WHERE ID_SALARIO_EMPLE = '2'")
+    data = cur.fetchall()
+    mysql.connection.commit()
+    
+    return render_template('listado_instructores.html', empleado=data)
 
+# Agregar instructor
+@app.route('/agregar_instructor', methods=['GET', 'POST'])
+def agregar_instructor():
+    if request.method == 'POST':
+        print(request.form)
+        # Obtener los datos del formulario
+        id_salario_emple = 2
+        estado = 1
+        cedula = request.form['cedula']
+        nombre = request.form['nombre']
+        apellido = request.form['apellido']
+        genero = request.form['genero']
+        edad = request.form['edad']
+        correo = request.form['correo']
+        contrasena = request.form['contrasena']
+        horario = request.form.get('horario')
+
+        # Obtener las especialidades y unirlas como una cadena
+        especialidad = ', '.join(request.form.getlist('especialidad'))
+        
+        #Hashear contraseña
+        contrasena_hash = bcrypt.generate_password_hash('contrasena').decode('utf8')
+        
+        # Validar contraseña
+        # is_valid = bcrypt.check_password_hash(contraseña_hash, contrasena)
+
+        # Agregar el usuario a la base de datos utilizando parámetros
+        cur = mysql.connection.cursor()
+        cur.execute('INSERT INTO empleado (IDENTIFICACION_EMPLEADO, NOMBRE, APELLIDO, CONTRASENA, EDAD, CORREO, GENERO, ID_SALARIO_EMPLE, ESPECIALIDAD, HORARIO, ESTADO) VALUES (%s,%s, %s, %s, %s, %s, %s, %s, %s, %s, %s)',
+                    (cedula, nombre, apellido, contrasena_hash, edad, correo, genero, id_salario_emple, especialidad, horario, estado))
+        
+        mysql.connection.commit()
+        flash('Instructor agregado correctamente')
+
+    return render_template('agregar_instructor.html')
+
+# Vista editar instructor
+@app.route('/editar_instructor', methods=['GET', 'POST'])
+def editar_instructor():
+    cur = mysql.connection.cursor()
+    cur.execute('SELECT * FROM empleado WHERE ID_SALARIO_EMPLE = "2"')
+    data = cur.fetchall()
+    mysql.connection.commit()
+
+    return render_template('editar_instructor.html', empleado=data)
+
+# Accion editar instructor
+@app.route('/vista_editar_instructor/<cedula>', methods=['GET', 'POST'])
+def vista_editar_instructor(cedula):
+    cur = mysql.connection.cursor()
+    cur.execute('SELECT * FROM empleado WHERE IDENTIFICACION_EMPLEADO = %s', (cedula,))
+    instructor = cur.fetchone()
+    mysql.connection.commit()
+
+    if instructor:
+        if request.method == 'POST':
+            # Lógica para actualizar los detalles del instructor en la base de datos
+            nombre = request.form['nombre']
+            apellido = request.form['apellido']
+            edad = request.form['edad']
+            correo = request.form['correo']
+            horario = request.form.get('horario')
+            especialidad = ', '.join(request.form.getlist('especialidad'))
+
+            # Lista de tuplas
+            campos_actualizar = []
+
+            # Verificar y agregar campos al actualizar
+            if nombre:
+                campos_actualizar.append(('nombre', nombre))
+            if apellido:
+                campos_actualizar.append(('apellido', apellido))
+            if edad:
+                campos_actualizar.append(('edad', edad))
+            if correo:
+                campos_actualizar.append(('correo', correo))
+            if horario:
+                campos_actualizar.append(('horario', horario))
+            if especialidad:
+                campos_actualizar.append(('especialidad', especialidad))
+
+            # Verifica si hay campos para actualizar
+            if campos_actualizar:
+
+                consulta = 'UPDATE empleado SET ' + ', '.join([f'{campo} = %s' for campo, valor in campos_actualizar]) + f' WHERE IDENTIFICACION_EMPLEADO = %s' 
+                
+                # Valores que se actualizarán
+                valores_actualizar = [valor for campo, valor in campos_actualizar] + [cedula]
+
+                cur.execute(consulta, valores_actualizar)
+                mysql.connection.commit()
+
+                flash('Instructor editado correctamente')
+                return redirect(url_for('editar_instructor'))
+            else:
+                flash('Edición sin cambios')
+
+        return render_template('vista_editar_instructor.html')
+
+# Buscar instructor
+@app.route('/buscar_instructor', methods=['GET', 'POST'])
+def buscar_instructor():
+    data = None
+    if request.method == 'POST':
+        # Obtén el término de búsqueda del formulario
+        cedula = request.form.get('cedula')
+        id_salario_emple = 2
+        cur = mysql.connection.cursor()
+        cur.execute("SELECT * FROM empleado WHERE IDENTIFICACION_EMPLEADO = %s AND ID_SALARIO_EMPLE = %s", (cedula,id_salario_emple))
+        data = cur.fetchall()
+        cur.close()
+        if data:
+            flash('Instructor encontrado.')
+            return render_template('buscar_instructor.html', resultados=data)
+        else:
+            flash('No se encontraron instructores con esa identificación.')
+    return render_template('buscar_instructor.html')
+
+# Vista estado instructor
+@app.route('/estado_instructor', methods=['GET', 'POST'])
+def estado_instructor():
+    cur = mysql.connection.cursor()
+    cur.execute('SELECT * FROM empleado WHERE ID_SALARIO_EMPLE = 2')
+    data = cur.fetchall()
+    mysql.connection.commit()
+    return render_template('estado_instructor.html', empleado=data)
+
+
+# Acción cambiar estado instructor
+@app.route('/cambiar_estado_instructor', methods=['POST'])
+def cambiar_estado_instructor():
+    if request.method == 'POST':
+        cedula = request.form.get('cedula')
+        
+        # Realiza una consulta para obtener el estado actual del instructor
+        cur = mysql.connection.cursor()
+        cur.execute("SELECT estado FROM empleado WHERE IDENTIFICACION_EMPLEADO = %s", (cedula,))
+        estado_actual = cur.fetchone() 
+        # Cambia el estado (por ejemplo, de True a False o viceversa)
+        nuevo_estado = not estado_actual[0]
+        # Realiza la actualización en la base de datos
+        cur.execute("UPDATE empleado SET estado = %s WHERE IDENTIFICACION_EMPLEADO = %s", (nuevo_estado, cedula))
+        mysql.connection.commit()
+        cur.close()
+        flash('Estado actualizado correctamente')
+    return redirect(url_for('estado_instructor') )
+
+# Nomina Instructores
+@app.route('/gestion_nomina', methods=['GET', 'POST'])
+def gestion_nomina():
+    cur = mysql.connection.cursor()
+    cur.execute('SELECT * FROM empleado WHERE ID_SALARIO_EMPLE = "2"')
+    data = cur.fetchall()
+    mysql.connection.commit()
+
+    return render_template('gestion_nomina.html', empleado=data)
+
+def generar_pdf(cedula, nombre, apellido):
+    fecha_actual = datetime.now().strftime("%Y-%m-%d")
+    id_salario_emple = 2
+    
+    cur = mysql.connection.cursor()
+    cur.execute('SELECT SALARIO FROM salario_empleado WHERE ID_SALARIO_EMPLE = %s', (id_salario_emple,))
+    data = cur.fetchone()
+
+    salario_base = data[0]
+    mysql.connection.commit()
+    aporte_salud = 4 * salario_base / 100
+    aporte_pension = 4 * salario_base / 100
+    aux_transporte = 140606
+    total_devengos = aux_transporte + salario_base
+    total_deducciones = aporte_salud + aporte_pension
+    total_liquido = total_devengos - total_deducciones
+   
+    
+    # Crear el nombre del archivo con la fecha actual
+    nombre_archivo = f"recibo_nomina_{fecha_actual}.pdf"
+    
+    # Crear un documento PDF con un título específico
+    doc = SimpleDocTemplate(nombre_archivo, pagesize=letter, title="Recibo de Nómina")
+
+    # Crear datos para la tabla basados en la estructura proporcionada
+    datos = [
+        ["EMPRESA", "", ""],
+        ["Nombre de la Empresa:", "Gimnasio La Candelaria", ""],
+        ["Dirección:", "Cl. 68 Sur # 47 - 10, Cdad. Bolívar, Bogotá", ""],
+        ["", "", ""],
+        ["TRABAJADOR/A", "", ""],
+        ["Nombre del Instructor:", f"{nombre} {apellido}", ""],
+        ["Identificación:", cedula, ""],
+        ["", "", ""], 
+        ["Devengos", "Cantidad", "Precio ($)", "Total ($)"],
+        ["Salario base", "30 días", 48910, int(salario_base)],
+        ["Auxilio de transporte", "", int(aux_transporte), int(aux_transporte)],
+        ["", "", "Total", int(total_devengos)],
+        ["Deducciones", "Cantidad", "Precio ($)", "Total ($)"],
+        ["Aporte a la salud", "", "4%", int(aporte_salud)],
+        ["Aporte a la pensión", "", "4%", int(aporte_pension)],
+        ["", "", "Total", int(total_deducciones)],
+        ["", "", ""],
+        ["Liquido a percibir", int(total_liquido), ""],
+        ["Fecha generación de nomina", fecha_actual, "", ""],
+    ]
+
+    # Crear la tabla y darle estilo con bordes
+    tabla = Table(datos, colWidths=(200, 100, 100, 100))
+    estilo_tabla = TableStyle([
+        ('GRID', (0, 0), (-1, -1), 1, colors.black),
+        ('ALIGN', (0, 0), (-1, -1), 'LEFT'),
+        ('VALIGN', (0, 0), (-1, -1), 'MIDDLE'),
+        ('BACKGROUND', (0, 0), (3, 0), colors.Color(0.8, 0.8, 0.8)),
+        ('BACKGROUND', (0, 4), (3, 4), colors.Color(0.8, 0.8, 0.8)),
+        ('BACKGROUND', (0, 8), (3, 8), colors.Color(1.0, 1.0, 0.6)),
+        ('BACKGROUND', (0, 12), (3, 12), colors.Color(1.0, 1.0, 0.6)),
+        ('BACKGROUND', (1, 17), (3, 17), colors.Color(0.8, 0.8, 1.0))
+    ])
+    
+    # Ajustar la combinación de filas
+    estilo_tabla.add('SPAN', (0, 0), (3, 0))  # Combinar la primera fila
+    # Ajustar la alineación de la primera fila
+    estilo_tabla.add('ALIGN', (0, 0), (3, 0), 'CENTER')
+    estilo_tabla.add('SPAN', (0, 4), (3, 4))
+    estilo_tabla.add('ALIGN', (0, 4), (3, 4), 'CENTER')
+    estilo_tabla.add('SPAN', (1, 1), (3, 1))
+    estilo_tabla.add('SPAN', (1, 2), (3, 2))
+    estilo_tabla.add('SPAN', (1, 5), (3, 5))
+    estilo_tabla.add('SPAN', (1, 6), (3, 6))
+    estilo_tabla.add('SPAN', (0, 3), (3, 3))
+    estilo_tabla.add('SPAN', (0, 7), (3, 7))
+    estilo_tabla.add('SPAN', (0, 11), (1, 11))
+    estilo_tabla.add('SPAN', (0, 15), (1, 15))
+    estilo_tabla.add('SPAN', (1, 17), (3, 17))
+    estilo_tabla.add('SPAN', (1, 18), (3, 18))
+
+    # Aplicar el estilo a la tabla
+    tabla.setStyle(estilo_tabla)
+
+    # Construir la tabla y agregarla al documento
+    elementos = []
+    elementos.append(tabla)
+
+    # Construir el PDF
+    doc.build(elementos)
+
+    return nombre_archivo
+
+@app.route('/descargar_pdf/<cedula>/<nombre>/<apellido>')
+def descargar_pdf(cedula, nombre, apellido):
+    nombre_archivo = generar_pdf(cedula, nombre, apellido)
+
+    # Configurar las cabeceras HTTP para indicar el nombre del archivo al navegador
+    return send_file(nombre_archivo, as_attachment=True)
 
 if __name__ == '__main__':
-    app.run(debug=True)
+    app.run(debug=True, port=4000)

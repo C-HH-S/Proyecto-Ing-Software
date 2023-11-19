@@ -9,7 +9,7 @@ app = Flask(__name__, template_folder=templateDir)
 #ARCHIVO HTML QUE SE LLAMA
 @app.route('/')
 def login():
-    return render_template('algo.html')
+    return render_template('login.html')
 
 
 
