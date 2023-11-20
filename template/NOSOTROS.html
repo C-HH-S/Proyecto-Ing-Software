@@ -49,6 +49,7 @@
                     <ul>
                         <li><a href="#" id="selected">Inicio</a></li>
                         <li><a href="#">Servicios</a>
+                            {% if session['rol'] == 'administrador' %}
                             <ul>
                                 <li><a href="{{ url_for('gestion_usuarios') }}">Gestión de usuarios</a></li>
                                 <li><a href="{{ url_for('gestion_maquinas') }}">Gestión de máquinas</a></li>
@@ -56,6 +57,20 @@
                                 <li><a href="{{ url_for('gestion_membresias') }}">Gestión de membresias</a></li>
                                 <li><a href="{{ url_for('gestion_instructores') }}">Gestión de instructores</a></li>
                             </ul>
+                            {% elif session['rol'] == 'instructor' %}
+                            <ul>
+                                <li><a href="{{ url_for('perfil_instructor') }}">Perfil</a></li>
+                                <li><a href="{{ url_for('planes_trabajo_ins') }}">Asignar Plan de Trabajo</a></li>
+                            </ul>
+                            {% elif session['rol'] == 'miembro' %}
+                            <ul>
+                                <li><a href="{{ url_for('perfil') }}">Perfil</a></li>
+                                <li><a href="{{url_for('reservas_miembro')}}">Reservas</a></li>
+                                <li><a href="{{url_for('plan_de_trabajo_miembro')}}">Planes de trabajo</a></li>
+                                <li><a href="{{url_for('miembro_estado_membresia')}}">Membresia</a></li>
+                                <li><a href="{{url_for('proceso_plan_trabajo')}}">Mi proceso</a></li>
+                            </ul>
+                            {% endif %}
                         </li>
                         <li><a href="#">Nosotros</a></li>
                         <li><a href="{{ url_for('CONTACTOS') }}">Contactos</a></li>

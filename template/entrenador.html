@@ -26,8 +26,8 @@
                                 <li><a href="{{ url_for('planes_trabajo_ins') }}">Asignar Plan de Trabajo</a></li>
                             </ul>
                         </li>
-                        <li><a href="#">Nosotros</a></li>
-                        <li><a href="#">Contactos</a></li>
+                        <li><a href="{{ url_for('NOSOTROS') }}">Nosotros</a></li>
+                        <li><a href="{{ url_for('CONTACTOS') }}">Contactos</a></li>
                         <li class="admin">
                             <h6>María</h6>
                         </li>
@@ -59,7 +59,11 @@
             <p>Identificacion: <b>{{ info_empleado[0] }}</b></p>
             <p>Correo: <b>{{ info_empleado[4] }}</b></p>
             <p>Horario: <b>{{ info_empleado[8] }}</b></p>
-            <p>Estado: <b>{{ info_empleado[9] }}</b></p>
+            <p>Estado: <b>{% if info_empleado[9] == 1 %}
+                    Activo
+                    {% else %}
+                    Inactivo
+                    {% endif %}</b></p>
         </div>
     </div>
 

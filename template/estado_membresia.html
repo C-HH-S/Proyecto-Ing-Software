@@ -27,8 +27,8 @@
                 <li><a href="{{ url_for('gestion_instructores') }}">Gestión de instructores</a></li>
               </ul>
             </li>
-            <li><a href="#">Nosotros</a></li>
-            <li><a href="#">Contactos</a></li>
+            <li><a href="{{ url_for('NOSOTROS') }}">Nosotros</a></li>
+            <li><a href="{{ url_for('CONTACTOS') }}">Contactos</a></li>
             <li class="admin">
               <h6>Admin</h6>
             </li>
@@ -42,77 +42,49 @@
 
   <h1 class="titleMembresia">ESTADO DE MEMBRESIAS</h1>
   <div class="tablaContainer">
-    <table class="tablaMembresia">
+    <table id="tabla" class="tablaMembresia">
       <tr class="titulos">
-        <th>ID</th>
+        <th>IDENTIFICACION</th>
         <th>NOMBRE</th>
         <th>APELLIDO</th>
-        <th>IDENTIFICACIÓN</th>
-        <th>CORREO</th>
-        <th>TELÉFONO</th>
-        <th>CONTRASEÑA</th>
-        <th>MEMBRESIA</th>
+        <th>EDAD</th>
         <th>ESTADO</th>
-        <th></th>
+        <th>FECHA INICIO</th>
+        <th>FECHA FIN</th>
+        <th>TIPO DE MEMBRESIA</th>
+        <th>COSTO</th>
+        <th>ESTADO MEMBRESIA</th>
+        <th>ACCION</th>
       </tr>
+      {% for miembro in membresias %}
       <tr>
-        <td>1</td>
-        <td>Juan</td>
-        <td>Ramirez</td>
-        <td>1736549876</td>
-        <td>juanr@gmail.com</td>
-        <td>3144912788</td>
-        <td>JuR1234</td>
-        <td>Mensual</td>
+        <td>{{ miembro.0 }}</td>
+        <td>{{ miembro.1 }}</td>
+        <td>{{ miembro.2 }}</td>
+        <td>{{ miembro.3 }}</td>
+        <td>{% if miembro[4] == 1 %}
+          Activo
+          {% else %}
+          Inactivo
+          {% endif %}</td>
+        <td>{{ miembro.5 }}</td>
+        <td>{{ miembro.6 }}</td>
+        <td>{{ miembro.7 }}</td>
+        <td>{{ miembro.8 }}</td>
         <td>
-          <button class="membresia_activa">
-            <label>Activo</label>
-          </button>
+          <form method="POST" action="{{ url_for('estado_membresia')}}">
+            <input type="hidden" name="cedula" value="{{ miembro.0 }}">
+            <select id="estado_membresia" name="estado_membresia" required class="form-control">
+              <option value="1">Activo</option>
+              <option value="0">Inactivo</option>
+            </select>
         </td>
         <td>
-          <div class="editar">
-            <a href="">Cambiar estado</a> <img class="img_edit" src="/static/img/ic_editar.png" alt="">
-          </div>
-      </tr>
-      <tr>
-        <td>2</td>
-        <td>Mariana</td>
-        <td>Hernández</td>
-        <td>947582987</td>
-        <td>mariana@gmail.com</td>
-        <td>3123459476</td>
-        <td>mariNandez02</td>
-        <td>Semanal</td>
-        <td>
-          <button class="membresia_inactiva">
-            <label>Inactivo</label>
-          </button>
-        </td>
-        <td>
-          <div class="editar">
-            <a href="">Cambiar estado</a> <img class="img_edit" src="/static/img/ic_editar.png" alt="">
-          </div>
-      </tr>
-      <tr>
-        <td>3</td>
-        <td>Sofía</td>
-        <td>Martínez</td>
-        <td>1056829635</td>
-        <td>sofima@hotmail.com</td>
-        <td>3258074506</td>
-        <td>10358165</td>
-        <td>Trimestral</td>
-        <td>
-          <button class="membresia_activa">
-            <label>Activo</label>
-          </button>
-        </td>
-        <td>
-          <div class="editar">
-            <a href="">Cambiar estado</a> <img class="img_edit" src="/static/img/ic_editar.png" alt="">
-          </div>
+          <input class="btn btn-danger" type="submit" value="Cambiar Estado Membresia">
+          </form>
         </td>
       </tr>
+      {% endfor %}
     </table>
     <a style="margin-left: 250px" href="{{ url_for('gestion_membresias') }}"
       class="btn btn-primary btn-block">Volver</a>

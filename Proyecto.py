@@ -4,7 +4,7 @@ from reportlab.lib import colors
 from reportlab.lib.pagesizes import letter, landscape
 from reportlab.platypus import SimpleDocTemplate, Table, TableStyle
 from datetime import datetime
-from flask import Flask, jsonify, render_template, request, redirect, url_for, flash, send_file
+from flask import Flask, jsonify, render_template, request, redirect, url_for, flash, send_file, session
 import mysql.connector
 from werkzeug.security import check_password_hash
 
@@ -62,7 +62,7 @@ def login():
             if cargo:
                 # Iniciar sesión como administrador o instructor según el cargo
                 session['identificacion'] = empleado[0]
-                session['rol'] = 'administrador' if cargo[0] == 'administrador' else 'instructor'
+                session['rol'] = 'administrador' if cargo[0] == 'Administrador' else 'instructor'
                 # Almacena información del empleado en la sesión
                 session['info_usuario'] = obtener_info_empleado(empleado[0])
                 # Redirige a la vista correspondiente
@@ -143,14 +143,6 @@ def gestion_membresias():
 @app.route('/gestion_instructores')
 def gestion_instructores():
      return render_template('gestion_instructores.html')
- 
-@app.route('/perfil_instructor')
-def perfil_instructor():
-     return render_template('perfil_instructor.html')
- 
-@app.route('/editar_info_personal_ins', methods=['GET', 'POST'])
-def editar_info_personal_ins():
-    return render_template('editar_info_personal_ins.html')
 
 #plan de trabajo
 @app.route('/planes_trabajo_ins')
@@ -339,16 +331,16 @@ def getidentificacion(id):
 # accion de editar datos instructor desde rol instructor
 @app.route("/actualizar_ins/<id>", methods=['POST'])
 def getidentificacion_ins(id):
+    identificacion = session.get('identificacion')
     if request.method == 'POST':
         nombre = request.form['nombre']
         apellido = request.form['apellido']
         edad = request.form['edad']
         correo = request.form['correo']
-        genero = request.form['genero']
 
         cur = mysql.connection.cursor()
-        cur.execute('UPDATE empleado SET NOMBRE = %s, APELLIDO = %s, EDAD = %s, CORREO = %s, GENERO = %s WHERE IDENTIFICACION_EMPLEADO = %s',
-                    (nombre, apellido, edad, correo, genero, id))
+        cur.execute('UPDATE empleado SET NOMBRE = %s, APELLIDO = %s, EDAD = %s, CORREO = %s WHERE IDENTIFICACION_EMPLEADO = %s',
+                    (nombre, apellido, edad, correo, id))
         mysql.connection.commit()
         flash('Información editada correctamente')
         return redirect(url_for('editar_info_personal_ins'))
@@ -481,64 +473,214 @@ def CONTACTOS():
 
 
 #estado membresia administrador
-@app.route('/estado_membresia')
+@app.route('/estado_membresia', methods=['GET', 'POST'])
 def estado_membresia():
-        #cur = mysql.connection.cursor()
-        #cur.execute("SELECT * FROM clientes")  
-        #rows = cur.fetchall()
-        #cur.close()
-        #return render_template('membresia.html', data=rows)
-    return render_template('estado_membresia.html')
+    cur = mysql.connection.cursor()
+    cur.execute("""
+    SELECT 
+        miembros.IDENTIFICACION, 
+        miembros.NOMBRE, 
+        miembros.APELLIDO, 
+        miembros.EDAD,
+        miembros.ESTADO,
+        estado_membresia.FECHA_INICIO,
+        estado_membresia.FECHA_FIN,
+        membresia_precios.TIPO,
+        membresia_precios.COSTO
+    FROM miembros
+    JOIN estado_membresia ON miembros.ID_ESTADO_MEM = estado_membresia.ID_ESTADO_MEM
+    JOIN membresia_precios ON miembros.ID_MEMBRESIA = membresia_precios.ID_MEMBRESIA
+""")
+    
+    membresias = cur.fetchall()
+    
+    if request.method == 'POST':
+        cedula = request.form['cedula']
+        estado_membresia = request.form['estado_membresia']
+        # Obtener el ID_ESTADO_MEM del miembro
+        cur.execute("""
+            SELECT ID_ESTADO_MEM
+            FROM miembros
+            WHERE IDENTIFICACION = %s
+            """, (cedula,))
+        id_estado_mem = cur.fetchone()[0]
+
+        # Actualizar la tabla estado_membresia
+        cur.execute("""
+            UPDATE estado_membresia
+            SET estado = %s
+            WHERE ID_ESTADO_MEM = %s
+            """, (estado_membresia, id_estado_mem))
+
+        mysql.connection.commit()
+    cur.close()
+
+    return render_template('estado_membresia.html', membresias=membresias)
 
 #listado membresia administrador
 @app.route('/listado_membresia')
 def listado_membresia():
-        #cur = mysql.connection.cursor()
-        #cur.execute("SELECT * FROM clientes")  
-        #rows = cur.fetchall()
-        #cur.close()
-        #return render_template('membresia.html', data=rows)
-    return render_template('listado_membresia.html')
+    
+    cur = mysql.connection.cursor()
+    cur.execute("""
+    SELECT 
+        miembros.IDENTIFICACION, 
+        miembros.NOMBRE, 
+        miembros.APELLIDO, 
+        miembros.EDAD,
+        miembros.ESTADO,
+        estado_membresia.ESTADO AS estado_membresia,
+        estado_membresia.FECHA_INICIO,
+        estado_membresia.FECHA_FIN,
+        membresia_precios.TIPO,
+        membresia_precios.COSTO
+    FROM miembros
+    JOIN estado_membresia ON miembros.ID_ESTADO_MEM = estado_membresia.ID_ESTADO_MEM
+    JOIN membresia_precios ON miembros.ID_MEMBRESIA = membresia_precios.ID_MEMBRESIA
+""")
+    membresias = cur.fetchall()
+    cur.close()
 
-#editar membresia administrador
+    return render_template('listado_membresia.html', membresias=membresias)
+
+#vista editar membresia administrador
 @app.route('/editar_membresia')
 def editar_membresia():
-        #cur = mysql.connection.cursor()
-        #cur.execute("SELECT * FROM clientes")  
-        #rows = cur.fetchall()
-        #cur.close()
-        #return render_template('membresia.html', data=rows)
-    return render_template('editar_membresia.html')
+    cur = mysql.connection.cursor()
+    cur.execute("""
+    SELECT 
+        miembros.IDENTIFICACION, 
+        miembros.NOMBRE, 
+        miembros.APELLIDO, 
+        miembros.EDAD,
+        miembros.ESTADO,
+        estado_membresia.ESTADO AS estado_membresia,
+        estado_membresia.FECHA_INICIO,
+        estado_membresia.FECHA_FIN,
+        membresia_precios.TIPO,
+        membresia_precios.COSTO
+    FROM miembros
+    JOIN estado_membresia ON miembros.ID_ESTADO_MEM = estado_membresia.ID_ESTADO_MEM
+    JOIN membresia_precios ON miembros.ID_MEMBRESIA = membresia_precios.ID_MEMBRESIA
+""")
+    
+    membresias = cur.fetchall()
+    cur.close()
 
-#vista editar membresia
-@app.route('/vista_editar_membresia')
-def vista_editar_membresia():
-        #cur = mysql.connection.cursor()
-        #cur.execute("SELECT * FROM clientes")  
-        #rows = cur.fetchall()
-        #cur.close()
-        #return render_template('membresia.html', data=rows)
-    return render_template('vista_editar_membresia.html')
+    return render_template('editar_membresia.html', membresias=membresias)
+
+#accion editar membresia
+@app.route('/vista_editar_membresia/<cedula>', methods=['GET', 'POST'])
+def vista_editar_membresia(cedula):
+    
+    cur = mysql.connection.cursor()
+    cur.execute("""
+    SELECT 
+        miembros.IDENTIFICACION, 
+        miembros.NOMBRE, 
+        miembros.APELLIDO, 
+        miembros.EDAD,
+        miembros.ESTADO,
+        estado_membresia.ESTADO AS estado_membresia,
+        estado_membresia.FECHA_INICIO,
+        estado_membresia.FECHA_FIN,
+        membresia_precios.COSTO
+    FROM miembros
+    JOIN estado_membresia ON miembros.ID_ESTADO_MEM = estado_membresia.ID_ESTADO_MEM
+    JOIN membresia_precios ON miembros.ID_MEMBRESIA = membresia_precios.ID_MEMBRESIA
+    WHERE miembros.IDENTIFICACION = %s
+""", (cedula,))
+    miembro = cur.fetchall()
+    
+    
+    if request.method == 'POST':
+        tipo = request.form['tipo']
+        cur.execute("""
+        UPDATE miembros
+        SET ID_MEMBRESIA = %s
+        WHERE IDENTIFICACION = %s
+        """, (tipo, cedula))
+        mysql.connection.commit()
+        flash('miembro editado correctamente')
+        return redirect(url_for('editar_membresia'))
+    cur.close()
+    return render_template('vista_editar_membresia.html', miembro=miembro)
 
 #vista principal de asignar membresia
 @app.route('/asignar_membresia')
 def asignar_membresia():
-        #cur = mysql.connection.cursor()
-        #cur.execute("SELECT * FROM clientes")  
-        #rows = cur.fetchall()
-        #cur.close()
-        #return render_template('membresia.html', data=rows)
-    return render_template('asignar_membresia.html')
+    cur = mysql.connection.cursor()
+    cur.execute("""
+    SELECT 
+        miembros.IDENTIFICACION, 
+        miembros.NOMBRE, 
+        miembros.APELLIDO, 
+        miembros.EDAD,
+        miembros.ESTADO,
+        estado_membresia.ESTADO AS estado_membresia,
+        estado_membresia.FECHA_INICIO,
+        estado_membresia.FECHA_FIN,
+        membresia_precios.TIPO,
+        membresia_precios.COSTO
+    FROM miembros
+    JOIN estado_membresia ON miembros.ID_ESTADO_MEM = estado_membresia.ID_ESTADO_MEM
+    JOIN membresia_precios ON miembros.ID_MEMBRESIA = membresia_precios.ID_MEMBRESIA
+""")
+    
+    membresias = cur.fetchall()
+    cur.close()
+
+    return render_template('asignar_membresia.html', membresias=membresias)
 
 #vista secundaria de asignar membresia
-@app.route('/vista_asignar_membresia')
-def vista_asignar_membresia():
-        #cur = mysql.connection.cursor()
-        #cur.execute("SELECT * FROM clientes")  
-        #rows = cur.fetchall()
-        #cur.close()
-        #return render_template('membresia.html', data=rows)
-    return render_template('vista_asignar_membresia.html')
+@app.route('/vista_asignar_membresia/<cedula>', methods=['GET', 'POST'])
+def vista_asignar_membresia(cedula):
+    
+    cur = mysql.connection.cursor()
+    cur.execute("""
+    SELECT 
+        miembros.IDENTIFICACION, 
+        miembros.NOMBRE, 
+        miembros.APELLIDO, 
+        miembros.EDAD,
+        miembros.ESTADO
+    FROM miembros
+    JOIN estado_membresia ON miembros.ID_ESTADO_MEM = estado_membresia.ID_ESTADO_MEM
+    JOIN membresia_precios ON miembros.ID_MEMBRESIA = membresia_precios.ID_MEMBRESIA
+    WHERE miembros.IDENTIFICACION = %s
+""", (cedula,))
+    miembro = cur.fetchall()
+    
+    if request.method == 'POST':
+        estado_membresia = request.form['estado_membresia']
+        tipo = request.form['tipo']
+        # Actualizar la tabla miembros
+        cur.execute("""
+            UPDATE miembros
+            SET ID_MEMBRESIA = %s
+            WHERE IDENTIFICACION = %s
+            """, (tipo, cedula))
+
+        # Obtener el ID_ESTADO_MEM del miembro
+        cur.execute("""
+            SELECT ID_ESTADO_MEM
+            FROM miembros
+            WHERE IDENTIFICACION = %s
+            """, (cedula,))
+        id_estado_mem = cur.fetchone()[0]
+
+        # Actualizar el estado de la membresía
+        cur.execute("""
+            UPDATE estado_membresia
+            SET estado = %s
+            WHERE ID_ESTADO_MEM = %s
+            """, (estado_membresia, id_estado_mem))
+
+        mysql.connection.commit()
+        flash('miembro asignado correctamente')
+        return redirect(url_for('asignar_membresia'))
+    cur.close()
+    return render_template('vista_asignar_membresia.html', miembro=miembro)
 
 #vista de reservas desde miembro
 @app.route('/reservas_miembro')
@@ -1117,17 +1259,11 @@ def agregar_instructor():
 
         # Obtener las especialidades y unirlas como una cadena
         especialidad = ', '.join(request.form.getlist('especialidad'))
-        
-        #Hashear contraseña
-        contrasena_hash = bcrypt.generate_password_hash('contrasena').decode('utf8')
-        
-        # Validar contraseña
-        # is_valid = bcrypt.check_password_hash(contraseña_hash, contrasena)
 
         # Agregar el usuario a la base de datos utilizando parámetros
         cur = mysql.connection.cursor()
         cur.execute('INSERT INTO empleado (IDENTIFICACION_EMPLEADO, NOMBRE, APELLIDO, CONTRASENA, EDAD, CORREO, GENERO, ID_SALARIO_EMPLE, ESPECIALIDAD, HORARIO, ESTADO) VALUES (%s,%s, %s, %s, %s, %s, %s, %s, %s, %s, %s)',
-                    (cedula, nombre, apellido, contrasena_hash, edad, correo, genero, id_salario_emple, especialidad, horario, estado))
+                    (cedula, nombre, apellido, contrasena, edad, correo, genero, id_salario_emple, especialidad, horario, estado))
         
         mysql.connection.commit()
         flash('Instructor agregado correctamente')

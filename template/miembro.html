@@ -29,8 +29,8 @@
                                 <li><a href="{{url_for('proceso_plan_trabajo')}}">Mi proceso</a></li>
                             </ul>
                         </li>
-                        <li><a href="#">Nosotros</a></li>
-                        <li><a href="#">Contactos</a></li>
+                        <li><a href="{{ url_for('NOSOTROS') }}">Nosotros</a></li>
+                        <li><a href="{{ url_for('CONTACTOS') }}">Contactos</a></li>
                         <li class="admin">
                             <h6>Juan</h6>
                         </li>
@@ -62,7 +62,11 @@
             <p>Identificacion: <b>{{ info_miembro[0] }}</b></p>
             <p>Correo: <b>{{ info_miembro[4] }}</b></p>
             <p>Telefono: <b>{{ info_miembro[5] }}</b></p>
-            <p>Estado: <b>{{ info_miembro[6] }}</b></p>
+            <p>Estado: <b>{% if info_miembro[7] == 1 %}
+                    Activo
+                    {% else %}
+                    Inactivo
+                    {% endif %}</b></p>
         </div>
     </div>
     <main>

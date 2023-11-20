@@ -27,8 +27,8 @@
                 <li><a href="{{ url_for('gestion_instructores') }}">Gestión de instructores</a></li>
               </ul>
             </li>
-            <li><a href="#">Nosotros</a></li>
-            <li><a href="#">Contactos</a></li>
+            <li><a href="{{ url_for('NOSOTROS') }}">Nosotros</a></li>
+            <li><a href="{{ url_for('CONTACTOS') }}">Contactos</a></li>
             <li class="admin">
               <h6>Admin</h6>
             </li>
@@ -44,72 +44,39 @@
   <div class="tablaContainer">
     <table id="tabla" class="tablaMembresia">
       <tr class="titulos">
-        <th>ID</th>
+        <th>IDENTIFICACION</th>
         <th>NOMBRE</th>
         <th>APELLIDO</th>
-        <th>IDENTIFICACIÓN</th>
-        <th>CORREO</th>
-        <th>TELÉFONO</th>
-        <th>CONTRASEÑA</th>
-        <th>MEMBRESIA</th>
-        <th>Fecha Inicio</th>
-        <th>Fecha final</th>
-        <th>Costo</th>
+        <th>EDAD</th>
         <th>ESTADO</th>
+        <th>ESTADO MEMBRESIA</th>
+        <th>FECHA INICIO</th>
+        <th>FECHA FIN</th>
+        <th>TIPO DE MEMBRESIA</th>
+        <th>COSTO</th>
       </tr>
+      {% for miembro in membresias %}
       <tr>
-        <td>1</td>
-        <td>Juan</td>
-        <td>Ramirez</td>
-        <td>1736549876</td>
-        <td>juanr@gmail.com</td>
-        <td>3144912788</td>
-        <td>JuR1234</td>
-        <td>Mensual</td>
-        <td>01/10/23</td>
-        <td>01/11/23</td>
-        <td>150000</td>
-        <td>
-          <button class="membresia_activa">
-            <label>Activo</label>
-          </button>
-        </td>
-      <tr>
-        <td>2</td>
-        <td>Mariana</td>
-        <td>Hernández</td>
-        <td>947582987</td>
-        <td>mariana@gmail.com</td>
-        <td>3123459476</td>
-        <td>mariNandez02</td>
-        <td>Semanal</td>
-        <td>01/10/23</td>
-        <td>08/10/23</td>
-        <td>55000</td>
-        <td>
-          <button class="membresia_inactiva">
-            <label>Inactivo</label>
-          </button>
-        </td>
+        <td>{{ miembro.0 }}</td>
+        <td>{{ miembro.1 }}</td>
+        <td>{{ miembro.2 }}</td>
+        <td>{{ miembro.3 }}</td>
+        <td>{% if miembro[4] == 1 %}
+          Activo
+          {% else %}
+          Inactivo
+          {% endif %}</td>
+        <td>{% if miembro[5] == 1 %}
+          Activo
+          {% else %}
+          Inactivo
+          {% endif %}</td>
+        <td>{{ miembro.6 }}</td>
+        <td>{{ miembro.7 }}</td>
+        <td>{{ miembro.8 }}</td>
+        <td>{{ miembro.9 }}</td>
       </tr>
-      <tr>
-        <td>3</td>
-        <td>Sofía</td>
-        <td>Martínez</td>
-        <td>1056829635</td>
-        <td>sofima@hotmail.com</td>
-        <td>3258074506</td>
-        <td>10358165</td>
-        <td>Trimestral</td>
-        <td>01/07/23</td>
-        <td>01/10/23</td>
-        <td>400000</td>
-        <td>
-          <button class="membresia_activa">
-            <label>Activo</label>
-          </button>
-        </td>
-      </tr>
+      {% endfor %}
     </table>
     <a style="margin-left: 250px" href="{{ url_for('gestion_membresias') }}"
       class="btn btn-primary btn-block">Volver</a>

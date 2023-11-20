@@ -29,8 +29,8 @@
                                 <li><a href="{{ url_for('proceso_plan_trabajo') }}">Mi proceso</a></li>
                             </ul>
                         </li>
-                        <li><a href="#">Nosotros</a></li>
-                        <li><a href="#">Contactos</a></li>
+                        <li><a href="{{ url_for('NOSOTROS') }}">Nosotros</a></li>
+                        <li><a href="{{ url_for('CONTACTOS') }}">Contactos</a></li>
                         <li class="admin">
                             <h6>Juan</h6>
                         </li>
@@ -68,28 +68,6 @@
                         <tbody>
                             {% for c in rows %}
                             <tr>
-                                <<<<<<< HEAD <td> Escaladora </td>
-                                    <td> Buen Estado </td>
-                                    <td> Activo </td>
-                                    <td> <label for="fechaagenda">Fecha de agenda:</label>
-                                        <input type="date" id="fechaagenda" name="fechaagenda" required
-                                            class="form-control" value="2018-07-22" min="2000-01-01" max="2023-12-31">
-                                    </td>
-                                    <td>
-                                        <a href="{{ url_for('vista_editar_membresia') }}"
-                                            class="btn btn-secondary">AGENDAR
-                                            MÁQUINA</a>
-                                    </td>
-                            </tr>
-                            <tr>
-                                <td> Caminadora </td>
-                                <td> Buen Estado </td>
-                                <td> Activo </td>
-                                <td> 22/10/23</td>
-                                <td>
-                                    <a href="{{ url_for('vista_editar_membresia') }}" class="btn btn-secondary">AGENDAR
-                                        MÁQUINA</a>
-                                    =======
                                 <td>{{ c.0 }}</td>
                                 <td>{{ c.1 }}</td>
                                 <td>{% if c[4] == 1 %}
@@ -101,7 +79,6 @@
                                 <td>
                                     <a href="{{ url_for('vista_reservar_maquina', id=c.0) }}"
                                         class="btn btn-primary">RESERVAR</a>
-                                    >>>>>>> 3345c79b1adb8f2de8a051cc09d87dd22fc2c492
                                 </td>
                             </tr>
                             {% endfor %}
