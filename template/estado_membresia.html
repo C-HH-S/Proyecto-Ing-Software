@@ -49,11 +49,11 @@
         <th>APELLIDO</th>
         <th>EDAD</th>
         <th>ESTADO</th>
+        <th>ESTADO MEMBRESIA</th>
         <th>FECHA INICIO</th>
         <th>FECHA FIN</th>
-        <th>TIPO DE MEMBRESIA</th>
+        <th>TIPO</th>
         <th>COSTO</th>
-        <th>ESTADO MEMBRESIA</th>
         <th>ACCION</th>
       </tr>
       {% for miembro in membresias %}
@@ -67,20 +67,19 @@
           {% else %}
           Inactivo
           {% endif %}</td>
-        <td>{{ miembro.5 }}</td>
+        <td>{% if miembro[5] == 1 %}
+          Activo
+          {% else %}
+          Inactivo
+          {% endif %}</td>
         <td>{{ miembro.6 }}</td>
         <td>{{ miembro.7 }}</td>
         <td>{{ miembro.8 }}</td>
+        <td>{{ miembro.9 }}</td>
         <td>
-          <form method="POST" action="{{ url_for('estado_membresia')}}">
-            <input type="hidden" name="cedula" value="{{ miembro.0 }}">
-            <select id="estado_membresia" name="estado_membresia" required class="form-control">
-              <option value="1">Activo</option>
-              <option value="0">Inactivo</option>
-            </select>
-        </td>
-        <td>
-          <input class="btn btn-danger" type="submit" value="Cambiar Estado Membresia">
+          <form method="post" action="{{ url_for('vista_cambiar_estado_membresia', cedula=miembro.0) }}">
+            <button type="submit" class="btn btn-danger btn-block" id="EstadoMembresia">Cambiar estado
+              membresia</button>
           </form>
         </td>
       </tr>

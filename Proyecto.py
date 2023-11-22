@@ -1,4 +1,4 @@
-import datetime
+from datetime import datetime, timedelta
 from flask_mysqldb import MySQL
 from reportlab.lib import colors
 from reportlab.lib.pagesizes import letter, landscape
@@ -470,9 +470,7 @@ def NOSOTROS():
 def CONTACTOS():
     return render_template('CONTACTOS.html')
 
-
-
-#estado membresia administrador
+#estado membresia
 @app.route('/estado_membresia', methods=['GET', 'POST'])
 def estado_membresia():
     cur = mysql.connection.cursor()
@@ -483,6 +481,7 @@ def estado_membresia():
         miembros.APELLIDO, 
         miembros.EDAD,
         miembros.ESTADO,
+        estado_membresia.ESTADO,
         estado_membresia.FECHA_INICIO,
         estado_membresia.FECHA_FIN,
         membresia_precios.TIPO,
@@ -490,33 +489,80 @@ def estado_membresia():
     FROM miembros
     JOIN estado_membresia ON miembros.ID_ESTADO_MEM = estado_membresia.ID_ESTADO_MEM
     JOIN membresia_precios ON miembros.ID_MEMBRESIA = membresia_precios.ID_MEMBRESIA
-""")
-    
+    """)
+
     membresias = cur.fetchall()
-    
-    if request.method == 'POST':
-        cedula = request.form['cedula']
-        estado_membresia = request.form['estado_membresia']
-        # Obtener el ID_ESTADO_MEM del miembro
-        cur.execute("""
-            SELECT ID_ESTADO_MEM
-            FROM miembros
-            WHERE IDENTIFICACION = %s
-            """, (cedula,))
-        id_estado_mem = cur.fetchone()[0]
-
-        # Actualizar la tabla estado_membresia
-        cur.execute("""
-            UPDATE estado_membresia
-            SET estado = %s
-            WHERE ID_ESTADO_MEM = %s
-            """, (estado_membresia, id_estado_mem))
-
-        mysql.connection.commit()
     cur.close()
 
     return render_template('estado_membresia.html', membresias=membresias)
 
+#vista cambiar estado membresia
+@app.route('/vista_cambiar_estado_membresia/<cedula>', methods=['GET', 'POST'])
+def vista_cambiar_estado_membresia(cedula):
+    cur = mysql.connection.cursor()
+    cur.execute("""
+    SELECT 
+        miembros.IDENTIFICACION, 
+        miembros.NOMBRE, 
+        miembros.APELLIDO, 
+        miembros.EDAD,
+        miembros.ESTADO,
+        estado_membresia.ESTADO,
+        estado_membresia.FECHA_INICIO,
+        estado_membresia.FECHA_FIN,
+        membresia_precios.TIPO,
+        membresia_precios.COSTO
+    FROM miembros
+    JOIN estado_membresia ON miembros.ID_ESTADO_MEM = estado_membresia.ID_ESTADO_MEM
+    JOIN membresia_precios ON miembros.ID_MEMBRESIA = membresia_precios.ID_MEMBRESIA
+    
+    WHERE miembros.IDENTIFICACION = %s
+    """, (cedula,))
+
+    membresias = cur.fetchall()
+    
+    if request.method == 'POST':
+        # Obtener el ID_ESTADO_MEM, el estado actual y el tipo de membresia del miembro
+        cur.execute("""
+            SELECT miembros.ID_ESTADO_MEM, estado_membresia.ESTADO, miembros.ID_MEMBRESIA
+            FROM miembros
+            JOIN estado_membresia ON miembros.ID_ESTADO_MEM = estado_membresia.ID_ESTADO_MEM
+            JOIN membresia_precios ON miembros.ID_MEMBRESIA = membresia_precios.ID_MEMBRESIA
+            WHERE miembros.IDENTIFICACION = %s
+            """, (cedula,))
+        id_estado_mem, estado_actual, tipo_membresia = cur.fetchone()
+
+        nuevo_estado = 0 if estado_actual == 1 else 1
+
+        # Actualizar la tabla estado_membresia
+        if estado_actual == 1:
+            cur.execute("""
+                UPDATE estado_membresia
+                SET ESTADO = %s, FECHA_INICIO = NULL, FECHA_FIN = NULL
+                WHERE ID_ESTADO_MEM = %s
+                """, (nuevo_estado, id_estado_mem))
+        else:
+            fecha_inicio = datetime.now()
+            if tipo_membresia == 1:
+                fecha_fin = fecha_inicio + timedelta(days=30)
+            elif tipo_membresia == 2:
+                fecha_fin = fecha_inicio + timedelta(days=365)
+            elif tipo_membresia == 3:
+                fecha_fin = fecha_inicio + timedelta(days=7)
+            fecha_inicio_f = fecha_inicio.strftime('%Y-%m-%d')
+            fecha_fin_f = fecha_fin.strftime('%Y-%m-%d')
+            cur.execute("""
+                UPDATE estado_membresia
+                SET ESTADO = %s, FECHA_INICIO = %s, FECHA_FIN = %s
+                WHERE ID_ESTADO_MEM = %s
+                """, (nuevo_estado, fecha_inicio_f, fecha_fin_f, id_estado_mem))
+            
+        mysql.connection.commit()  
+       
+    flash('estado modificado correctamente')
+    cur.close()
+    return render_template('vista_cambiar_estado_membresia.html', membresias=membresias) 
+    
 #listado membresia administrador
 @app.route('/listado_membresia')
 def listado_membresia():
@@ -535,9 +581,9 @@ def listado_membresia():
         membresia_precios.TIPO,
         membresia_precios.COSTO
     FROM miembros
-    JOIN estado_membresia ON miembros.ID_ESTADO_MEM = estado_membresia.ID_ESTADO_MEM
-    JOIN membresia_precios ON miembros.ID_MEMBRESIA = membresia_precios.ID_MEMBRESIA
-""")
+    LEFT JOIN estado_membresia ON miembros.ID_ESTADO_MEM = estado_membresia.ID_ESTADO_MEM
+    LEFT JOIN membresia_precios ON miembros.ID_MEMBRESIA = membresia_precios.ID_MEMBRESIA
+""",)
     membresias = cur.fetchall()
     cur.close()
 
@@ -609,6 +655,9 @@ def vista_editar_membresia(cedula):
 #vista principal de asignar membresia
 @app.route('/asignar_membresia')
 def asignar_membresia():
+    id_estado_mem = 0
+    estado_miembro = 1
+    
     cur = mysql.connection.cursor()
     cur.execute("""
     SELECT 
@@ -623,9 +672,10 @@ def asignar_membresia():
         membresia_precios.TIPO,
         membresia_precios.COSTO
     FROM miembros
-    JOIN estado_membresia ON miembros.ID_ESTADO_MEM = estado_membresia.ID_ESTADO_MEM
-    JOIN membresia_precios ON miembros.ID_MEMBRESIA = membresia_precios.ID_MEMBRESIA
-""")
+    LEFT JOIN estado_membresia ON miembros.ID_ESTADO_MEM = estado_membresia.ID_ESTADO_MEM
+    LEFT JOIN membresia_precios ON miembros.ID_MEMBRESIA = membresia_precios.ID_MEMBRESIA
+    WHERE miembros.ID_ESTADO_MEM = %s AND miembros.ESTADO = %s
+""", (id_estado_mem, estado_miembro,))
     
     membresias = cur.fetchall()
     cur.close()
@@ -636,6 +686,8 @@ def asignar_membresia():
 @app.route('/vista_asignar_membresia/<cedula>', methods=['GET', 'POST'])
 def vista_asignar_membresia(cedula):
     
+    id_estado_mem = 1
+    
     cur = mysql.connection.cursor()
     cur.execute("""
     SELECT 
@@ -645,36 +697,38 @@ def vista_asignar_membresia(cedula):
         miembros.EDAD,
         miembros.ESTADO
     FROM miembros
-    JOIN estado_membresia ON miembros.ID_ESTADO_MEM = estado_membresia.ID_ESTADO_MEM
-    JOIN membresia_precios ON miembros.ID_MEMBRESIA = membresia_precios.ID_MEMBRESIA
+    LEFT JOIN estado_membresia ON miembros.ID_ESTADO_MEM = estado_membresia.ID_ESTADO_MEM
+    LEFT JOIN membresia_precios ON miembros.ID_MEMBRESIA = membresia_precios.ID_MEMBRESIA
     WHERE miembros.IDENTIFICACION = %s
 """, (cedula,))
     miembro = cur.fetchall()
     
     if request.method == 'POST':
-        estado_membresia = request.form['estado_membresia']
         tipo = request.form['tipo']
+        fecha_inicio = datetime.strptime(request.form['fecha_inicio'], '%Y-%m-%d')
+        estado_membresia = 1
+        
+        # Calcular la fecha_fin según el tipo de membresía
+        if tipo == '1':
+            fecha_fin = fecha_inicio + timedelta(days=30)
+        elif tipo == '2':
+            fecha_fin = fecha_inicio + timedelta(days=365)
+        elif tipo == '3':
+            fecha_fin = fecha_inicio + timedelta(days=7)
+        
+        # Crear un nuevo registro en la tabla estado_membresia
+        cur.execute("""
+            INSERT INTO estado_membresia (ESTADO, FECHA_INICIO, FECHA_FIN, ID_MEMBRESIA)
+            VALUES (%s, %s, %s, %s)
+        """, (estado_membresia, fecha_inicio, fecha_fin, tipo))
+        id_estado_mem = cur.lastrowid  # Obtener el ID del último registro insertado
+        
         # Actualizar la tabla miembros
         cur.execute("""
             UPDATE miembros
-            SET ID_MEMBRESIA = %s
+            SET ID_MEMBRESIA = %s, ID_ESTADO_MEM = %s
             WHERE IDENTIFICACION = %s
-            """, (tipo, cedula))
-
-        # Obtener el ID_ESTADO_MEM del miembro
-        cur.execute("""
-            SELECT ID_ESTADO_MEM
-            FROM miembros
-            WHERE IDENTIFICACION = %s
-            """, (cedula,))
-        id_estado_mem = cur.fetchone()[0]
-
-        # Actualizar el estado de la membresía
-        cur.execute("""
-            UPDATE estado_membresia
-            SET estado = %s
-            WHERE ID_ESTADO_MEM = %s
-            """, (estado_membresia, id_estado_mem))
+            """, (tipo, id_estado_mem, cedula))
 
         mysql.connection.commit()
         flash('miembro asignado correctamente')
