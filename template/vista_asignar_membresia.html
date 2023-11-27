@@ -58,8 +58,8 @@
             <th>APELLIDO</th>
             <th>EDAD</th>
             <th>ESTADO</th>
-            <th>ESTADO MEMBRESIA</th>
-            <th>TIPO DE MEMBRESIA</th>
+            <th><label for="tipo">TIPO DE MEMBRESIA</label></th>
+            <th><label for="fecha_inicio">FECHA INICIO</label></th>
             <th>ACCION</th>
         </tr>
         {% for m in miembro %}
@@ -70,18 +70,15 @@
             <td>{{ m.3 }}</td>
             <td>{% if m[4] == 1 %}Activo{% else %}Inactivo{% endif %}</td>
             <td>
-                <form method="POST" action="{{ url_for('vista_asignar_membresia', cedula=m.0) }}">
-                    <select id="estado_membresia" name="estado_membresia" required class="form-control">
-                        <option value="1">Activo</option>
-                        <option value="0">Inactivo</option>
+                <form method="post" action="{{url_for('vista_asignar_membresia', cedula=m.0)}}">
+                    <select id="tipo" name="tipo" required class="form-control">
+                        <option value="1">Mensual</option>
+                        <option value="2">Anual</option>
+                        <option value="3">Semanal</option>
                     </select>
             </td>
             <td>
-                <select id="tipo" name="tipo" required class="form-control">
-                    <option value="1">Mensual</option>
-                    <option value="2">Anual</option>
-                    <option value="3">Semanal</option>
-                </select>
+                <input type="date" id="fecha_inicio" name="fecha_inicio" required class="form-control">
             </td>
             <td>
                 <input class="btn btn-secondary" type="submit" value="Asignar Membresia">

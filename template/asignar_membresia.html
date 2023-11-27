@@ -82,10 +82,10 @@
                     {% else %}
                     Inactivo
                     {% endif %}</td>
-                <td>{{ miembro.6 }}</td>
-                <td>{{ miembro.7 }}</td>
-                <td>{{ miembro.8 }}</td>
-                <td>{{ miembro.9 }}</td>
+                <td>{{ miembro.6 if miembro.6 is not none else 'Inactivo'}}</td>
+                <td>{{ miembro.7 if miembro.7 is not none else 'Inactivo'}}</td>
+                <td>{{ miembro.8 if miembro.8 is not none else 'Inactivo'}}</td>
+                <td>{{ miembro.9 if miembro.9 is not none else 'Inactivo'}}</td>
                 <td><a href="{{ url_for('vista_asignar_membresia', cedula=miembro.0) }}" class="btn btn-primary">ASIGNAR
                         MEMBRESIA</a></td>
             </tr>

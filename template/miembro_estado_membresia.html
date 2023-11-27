@@ -30,7 +30,7 @@
                         <li><a href="{{ url_for('NOSOTROS') }}">Nosotros</a></li>
                         <li><a href="{{ url_for('CONTACTOS') }}">Contactos</a></li>
                         <li class="admin">
-                            <h6>Juan</h6>
+                            <h6>Miembro</h6>
                         </li>
                         <li class="user"><img src="/static/img/ic_person.png" alt=""></li>
                         <li><a href="{{ url_for('login') }}"></a></li>
@@ -48,9 +48,7 @@
         </style>
     </header>
     <div>
-        <img class="img_user" src="/static/img/usuario_juan.PNG" alt="">
-        <h3 class="title_perfil">JUAN RAMIREZ</h3>
-        <h6 class="title_perfil">juanr@gmail.com</h6>
+        <img class="img_user" src="../static/img/usuario_juan.PNG" alt="">
     </div>
 
     <main id="tabla">
@@ -72,11 +70,11 @@
                     <tbody>
                         {% for m in rows %}
                         <tr>
-                            <td>{{ m.8 }}</td>
-                            <td>{{ m.12 }}</td>
-                            <td>{{ m.13 }}</td>
-                            <td>{{ m.14 }}</td>
-                            <td>{{ m.15 }}</td>
+                            <td>{{ m[11] }}</td>
+                            <td>{{ m[12] }}</td>
+                            <td>{{ m[13] }}</td>
+                            <td>{{ m[14] }}</td>
+                            <td>{{ m[15] }}</td>
                         </tr>
                         {% endfor %}
                     </tbody>
